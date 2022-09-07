@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#define S21_MAX_UINT 4294967295
+
 typedef struct {
   int bits[4];
 } s21_decimal;
