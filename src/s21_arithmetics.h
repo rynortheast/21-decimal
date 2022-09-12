@@ -1,0 +1,6 @@
+#ifndef SRC_S21_ARITHMETICS_H_
+#define SRC_S21_ARITHMETICS_H_
+
+
+
+#endif  //  SRC_S21_ARITHMETICS_H_
