@@ -12,6 +12,7 @@ typedef struct {
 #define S21_MAX_UINT 4294967295
 
 #include "s21_auxiliary.h"
+#include "s21_comparison.h"
 #include "s21_arithmetics.h"
 
 #endif  //  SRC_S21_DECIMAL_H_

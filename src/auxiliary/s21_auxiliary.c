@@ -1,8 +1,112 @@
 #include "./../s21_decimal.h"
 
-int get_sign(s21_decimal *d) {
-  unsigned int mask = 1u << 31;
-  return !!(d->bits[3] & mask);
+int getSign(s21_decimal value) {
+  return !!(value.bits[3] & (1u << 31));
+}
+
+int getScale(s21_decimal value) { 
+  return (char) (value.bits[3] >> 16);
+}
+
+void setSign(s21_decimal * value, int sign) {
+  if (sign == (-1)) value->bits[3] | (1u << 31);  // Почему здесь sign = -1?
+  else value->bits[3] & ~(1u << 31);
+}
+
+int getBit(s21_decimal value, int bit) {
+  return !!(value.bits[bit / 32] & (1u << (bit % 32)));   // Здесь разве можно использовать "%"?
+}
+
+void setScale(s21_decimal * value, int scale) {
+  int sign = getSign(*value) ? 1 : 0;
+  if (scale > 0 && scale < 28) {
+    value->bits[3] &= ~(0xFF << 16);
+    value->bits[3] |= scale << 16;
+  }
+  sign ? setSign(value, 1) : 0; // Почему здесь меняется знак? Почему нельзя это нельзя выполнить в начале?
+}
+
+// Очень странная функция. Она будто бессмысленна, т.к. изначальный её вид вообще
+// не учитывал возможность отрицательного исхода.
+int isNull(s21_decimal value) {
+  return (&value) ? (!value.bits[0] && !value.bits[1] && !value.bits[2]) : 0;
+}
+
+// Необходим рефактиринг
+void scaleIncrease(s21_decimal * value, int shift) {
+    if ((getScale(*value) + shift) < 29) {
+        setScale(value, getScale(*value) + shift);
+        s21_decimal tmp = *value, tmp1 = *value;
+        shiftLeft(&tmp, 1);
+        shiftLeft(&tmp1, 3);
+        if (bit_addition(&tmp, &tmp1, value)) {
+            setBit(value, 96, 1);
+        }
+    }
+}
+
+void s21_copy(s21_decimal * dest, s21_decimal src) {
+  for (int x = 0; x < 4; x += 1)
+    dest->bits[x] = src.bits[x];
+}
+
+// Необходим рефакториг
+int getBitLast(s21_decimal value) {
+  int bit = 95;
+  while ((bit >= 0) && (getBit(value, bit) == 0))
+    bit -= 1;
+  return bit;
+}
+
+// Можно ли тут вообще использовать знак деления?
+// Что значит переменная "a"?
+void setBit(s21_decimal * value, int bit, int a) {
+  if (bit / 32 < 4 && a) 
+    value->bits[bit / 32] |= (1u << (bit % 32));
+  else if (bit / 32 < 4 && !a) 
+    value->bits[bit / 32] &= ~(1u << (bit % 32));
+}
+
+//  Поменять наименование + рефакторинг
+//  Нужны ли тут переменные last_bit_1 и last_bit_2?
+void shiftLeft(s21_decimal * value, int shift) {
+    if (!(getBitLast(*value) + shift > 95)) {
+        for (int y = 0; y < shift; y += 1) {
+            int last_bit_1 = getBit(*value, 31);
+            int last_bit_2 = getBit(*value, 63);
+            for (int x = 0; x < 3; x += 1)
+              value->bits[x] <<= 1;
+            if (last_bit_1) setBit(value, 32, 1);
+            if (last_bit_2) setBit(value, 64, 1);
+        }
+    }
+}
+
+int norm_scale(s21_decimal *a, s21_decimal *b) {
+    int res = 0;
+    if (getScale(*a) != getScale(*b)) {
+        if (getScale(*a) < getScale(*b)) {
+            norm_scale(b, a);
+        } else {
+            s21_decimal *high = a, *low = b;
+            s21_decimal tmp = {0};
+            int scaleLow = getScale(*low), scaleHigh = getScale(*high);
+            int diff_scale = scaleHigh - scaleLow;
+            while (diff_scale) {
+                s21_copy(&tmp, *low);
+                scaleIncrease(low, 1);
+                if (!getBit(*low, 96)) {
+                    s21_copy(&tmp, *low);
+                    scaleLow++; diff_scale--;
+                } else {
+                    s21_copy(low, tmp);
+                    break;
+                }
+            }
+            res = 0;
+        }
+    }
+    return res;
 }
 
 int scale_equalize(s21_decimal *a, s21_decimal *b) {
@@ -12,8 +116,8 @@ int scale_equalize(s21_decimal *a, s21_decimal *b) {
   temp.bits[0] = temp.bits[1] = temp.bits[2] = temp.bits[3] = 0;
   int per = 0;
   int out = 1;
-  if (get_scale(a) != get_scale(b)) {
-    if (get_scale(a) > get_scale(b)) {
+  if (getScale(*a) != getScale(*b)) {
+    if (getScale(*a) > getScale(*b)) {
       big = a;
       small = b;
       per = 1;
@@ -21,29 +125,29 @@ int scale_equalize(s21_decimal *a, s21_decimal *b) {
       big = b;
       small = a;
     }
-    int scaleSmall = get_scale(small);
-    int scaleBig = get_scale(big);
+    int scaleSmall = getScale(*small);
+    int scaleBig = getScale(*big);
     int newscale = scaleBig - scaleSmall;
     while (newscale) {
       temp.bits[0] = small->bits[0];
       temp.bits[1] = small->bits[1];
       temp.bits[2] = small->bits[2];
       temp.bits[3] = small->bits[3];
-      s21_scale_increase1(small, 1);
-      if (!get_bit(*small, 96)) {
-        bits_copy(&temp, *small);
+      scaleIncrease(small, 1);
+      if (!getBit(*small, 96)) {
+        s21_copy(&temp, *small);
         scaleSmall++;
         newscale--;
       } else {
-        bits_copy(small, temp);
+        s21_copy(small, temp);
         break;
       }
     }
-    set_scale(&temp, scaleSmall);
+    setScale(&temp, scaleSmall);
     int newScale2 = scaleBig - scaleSmall;
     while (newScale2) {
       s21_scale_decrease(big, newScale2);
-      set_scale(big, scaleSmall);
+      setScale(big, scaleSmall);
       newScale2--;
     }
     if (per) {
@@ -62,41 +166,37 @@ int bit_addition(s21_decimal *a, s21_decimal *b, s21_decimal *res) {
   int e = 0;
   int resultat = 0;
   for (int i = 0; i < 96; i++) {
-    int bit1 = get_bit(*a, i);
-    int bit2 = get_bit(*b, i);
+    int bit1 = getBit(*a, i);
+    int bit2 = getBit(*b, i);
 
     if (!bit1 && !bit2) {
       if (e) {
-        set_bit(res, i, 1);
+        setBit(res, i, 1);
         e = 0;
       } else {
-        set_bit(res, i, 0);
+        setBit(res, i, 0);
       }
     } else if (bit1 != bit2) {
       if (e) {
-        set_bit(res, i, 0);
+        setBit(res, i, 0);
         e = 1;
       } else {
-        set_bit(res, i, 1);
+        setBit(res, i, 1);
       }
     } else {
       if (e) {
-        set_bit(res, i, 1);
+        setBit(res, i, 1);
         e = 1;
       } else {
-        set_bit(res, i, 0);
+        setBit(res, i, 0);
         e = 1;
       }
     }
-    if (i == 95 && e == 1 && !get_bit(*a, 97) && !get_bit(*b, 97)) {
+    if (i == 95 && e == 1 && !getBit(*a, 97) && !getBit(*b, 97)) {
       resultat = 1;
     }
   }
   return resultat;
-}
-
-int get_scale(s21_decimal *d) {
-    return (char)(d->bits[3] >> 16);
 }
 
 void s21_scale_decrease(s21_decimal *value, int shift) {
@@ -114,101 +214,7 @@ void s21_scale_decrease(s21_decimal *value, int shift) {
     }
     j++;
   }
-  s21_set_scale(value, (get_scale(value) - shift));
-}
-
-void set_scale(s21_decimal *d, int scale) {
-  int e = 0;
-  if (get_sign(d)) {
-    e = 1;
-  }
-  if (scale > 0 && scale < 28) {
-    int cMask = ~(0xFF << 16);
-    d->bits[3] &= cMask;
-    int mask = scale << 16;
-    d->bits[3] |= mask;
-  }
-  if (e) {
-    set_sign(d, 1);
-  }
-}
-
-void s21_set_scale(s21_decimal *value, int size) {
-  value->bits[3] &= ~(S21_MAX_UINT / 2);
-  value->bits[3] >>= 16;
-  value->bits[3] |= size;
-  value->bits[3] <<= 16;
-}
-
-void set_sign(s21_decimal *d, int sign) {
-  unsigned int mask = 1u << 31;
-  if (sign != 0) {
-    d->bits[3] |= mask;
-  } else {
-    d->bits[3] &= ~mask;
-  }
-}
-
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
-  int res = 5;
-  int result_sign = 5;
-  int sign1 = get_sign(&value_1);
-  int sign2 = get_sign(&value_2);
-  scale_equalize(&value_1, &value_2);
-  if (sign1 != sign2) {
-    result_sign = sign1;
-    set_sign(&value_1, 0);
-    set_sign(&value_2, 0);
-    res = s21_add(value_1, value_2, result);
-    set_sign(result, result_sign);
-  } else {
-    if (s21_is_equal(value_1, value_2)) {
-      result->bits[0] = 0;
-      result->bits[1] = 0;
-      result->bits[2] = 0;
-      result->bits[3] = 0;
-      res = 0;
-    } else {
-      set_sign(&value_1, 0);
-      set_sign(&value_2, 0);
-      s21_decimal *small, *big;
-      if (s21_is_less(value_1, value_2)) {
-        small = &value_1;
-        big = &value_2;
-        result_sign = !sign2;
-      } else {
-        small = &value_2;
-        big = &value_1;
-        result_sign = sign1;
-      }
-      convert(small);
-      res = s21_add(*small, *big, result);
-      set_sign(result, result_sign);
-    }
-  }
-  if (res && result_sign) res = 2;
-  return res;
-}
-
-int s21_is_equal(s21_decimal a, s21_decimal b) {
-  int res = 1;
-  if (get_sign(&a) == get_sign(&b)) {
-    scale_equalize(&a, &b);
-    for (int i = 95; i >= 0; i--) {
-      int bit1 = get_bit(a, i);
-      int bit2 = get_bit(b, i);
-      if (bit1 != bit2) {
-        res = 0;
-      }
-    }
-  } else if (!a.bits[0] && !a.bits[1] && !a.bits[2] && !b.bits[0] &&
-              !b.bits[1] && !b.bits[2]) {
-    res = 1;
-  } else {
-    res = 0;
-  }
-  return res;
+  setScale(value, (getScale(*value) - shift));
 }
 
 void convert(s21_decimal *d) {
@@ -222,114 +228,5 @@ void convert(s21_decimal *d) {
   d->bits[0] = result.bits[0];
   d->bits[1] = result.bits[1];
   d->bits[2] = result.bits[2];
-  set_bit(d, 97, 1);
-}
-
-int s21_is_less(s21_decimal a, s21_decimal b) { return s21_is_greater(b, a); }
-
-int s21_is_greater(s21_decimal a, s21_decimal b) {
-  int res = 0;
-  int sign1 = get_sign(&a);
-  int sign2 = get_sign(&b);
-  if (!zero(a, b)) {
-    if (sign1 == 0 && sign2 == 1) {
-      res = 1;
-    } else if (sign1 == 1 && sign2 == 0) {
-      res = 0;
-    } else if (sign1 == sign2) {
-      scale_equalize(&a, &b);
-      for (int i = 95; i >= 0; i--) {
-        int bit1 = get_bit(a, i);
-        int bit2 = get_bit(b, i);
-        if (bit1 != bit2) {
-          if (!(bit1 == 0) && bit2 == 0 && sign1 == 0) {
-            res = 1;
-            break;
-          } else if (!(bit1 == 0) && bit2 == 0 && sign1 == 1) {
-            res = 0;
-            break;
-          } else if (!(bit2 == 0) && sign1 == 0) {
-            res = 0;
-            break;
-          } else if (!(bit2 == 0) && sign1 == 1) {
-            res = 1;
-            break;
-          }
-        }
-      }
-    }
-  }
-  return res;
-}
-
-int zero(s21_decimal a, s21_decimal b) {
-  int res = 0;
-  s21_decimal *p1 = &a;
-  s21_decimal *p2 = &b;
-
-  if (p1 && p2) {
-    if (!a.bits[0] && !b.bits[0] && !a.bits[1] && !b.bits[1] && !a.bits[2] &&
-        !b.bits[2])
-      res = 1;
-  }
-  return res;
-}
-
-void set_bit(s21_decimal *d, int bit, int a) {
-  unsigned int mask = 1u << (bit % 32);
-  if (bit / 32 < 4 && a) {
-    d->bits[bit / 32] |= mask;
-  } else if (bit / 32 < 4 && !a) {
-    d->bits[bit / 32] &= ~mask;
-  }
-}
-
-void bits_copy(s21_decimal *dest, s21_decimal src) {
-  dest->bits[0] = src.bits[0];
-  dest->bits[1] = src.bits[1];
-  dest->bits[2] = src.bits[2];
-  dest->bits[3] = src.bits[3];
-}
-
-int get_bit(s21_decimal d, int bit) {
-  unsigned int mask = 1u << (bit % 32);
-  return !!(d.bits[bit / 32] & mask);
-}
-
-void s21_scale_increase1(s21_decimal *value, int shift) {
-  if ((get_scale(value) + shift) < 29) {
-    set_scale(value, (get_scale(value) + shift));
-    s21_decimal tmp;
-    tmp = *value;
-    s21_decimal tmp1;
-    tmp1 = *value;
-    left(&tmp, 1);
-    left(&tmp1, 3);
-    if (bit_addition(&tmp, &tmp1, value)) {
-      set_bit(value, 96, 1);
-    }
-  }
-}
-
-void left(s21_decimal *d, int g) {
-  int lastbit = last_bit(*d);
-  if (lastbit + g > 95) {
-    return;
-  }
-  for (int i = 0; i < g; i++) {
-    int bit31 = get_bit(*d, 31);
-    int bit63 = get_bit(*d, 63);
-    d->bits[0] <<= 1;
-    d->bits[1] <<= 1;
-    d->bits[2] <<= 1;
-    if (bit31) set_bit(d, 32, 1);
-    if (bit63) set_bit(d, 64, 1);
-  }
-}
-
-int last_bit(s21_decimal d) {
-  int bit = 95;
-  for (; bit >= 0 && get_bit(d, bit) == 0; bit--) {
-  }
-  return bit;
+  setBit(d, 97, 1);
 }
