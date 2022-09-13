@@ -1,80 +1,4 @@
-#include "s21_decimal.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-
-int get_sign(s21_decimal *d);
-int scale_equalize(s21_decimal *a, s21_decimal *b); // norm scale
-void s21_scale_increase1(s21_decimal *value, int shift); // scale up.. .
-int get_scale(s21_decimal *d);
-int bit_addition(s21_decimal *a, s21_decimal *b, s21_decimal *res); // check bit
-void set_scale(s21_decimal *d, int scale); // def_scale
-void set_sign(s21_decimal *d, int sign); // def_sign
-int s21_is_equal(s21_decimal a, s21_decimal b);
-int s21_is_less(s21_decimal a, s21_decimal b);
-int s21_is_greater(s21_decimal a, s21_decimal b);
-int zero(s21_decimal a, s21_decimal b); // is null
-void set_bit(s21_decimal *d, int bit, int a); // def bit
-void bits_copy(s21_decimal *dest, s21_decimal src); // decimal dec copy
-int get_bit(s21_decimal d, int bit);
-void left(s21_decimal *d, int g); // offset left
-int last_bit(s21_decimal d); // get fin bit
-
-
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-void s21_scale_decrease(s21_decimal *value, int shift);
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-void convert(s21_decimal *d);
-void s21_set_scale(s21_decimal *value, int size);
-
-int main() {
-
-    s21_decimal TEST_1 = {{5, 0, 0, 0}};
-    s21_decimal TEST_2 = {{5, 0, 0, 0}};
-    s21_decimal RESULT;
-
-    s21_add(TEST_1, TEST_2, &RESULT);
-
-    printf("TEST: %d", RESULT.bits[0]);
-
-    return 0;
-}
-
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
-  int res = 5;
-  int sign1 = get_sign(&value_1);
-  int sign2 = get_sign(&value_2);
-  if (sign1 == sign2) {
-    scale_equalize(&value_1, &value_2);
-    if (bit_addition(&value_1, &value_2, result)) {
-      if ((get_scale(&value_1) == 0 || get_scale(&value_2) == 0) &&
-          sign1 == 0) {
-        res = 1;
-      } else if ((get_scale(&value_1) == 0 || get_scale(&value_2) == 0) &&
-                 sign1 == 1) {
-        res = 2;
-      } else if (get_scale(&value_1) > 0 && get_scale(&value_2) > 0) {
-        s21_scale_decrease(&value_1, 1);
-        s21_scale_decrease(&value_2, 1);
-        set_scale(&value_1, get_scale(&value_1) - 1);
-        set_scale(&value_2, get_scale(&value_2) - 1);
-        res = s21_add(value_1, value_2, result);
-      }
-    } else {
-      set_sign(result, sign1);
-      set_scale(result, get_scale(&value_1));
-      res = 0;
-    }
-  } else if (get_sign(&value_1) && !get_sign(&value_2)) {
-    set_sign(&value_1, 0);
-    res = s21_sub(value_2, value_1, result);
-  } else if (!get_sign(&value_1) && get_sign(&value_2)) {
-    set_sign(&value_2, 0);
-    res = s21_sub(value_1, value_2, result);
-  }
-  return res;
-}
+#include "./../s21_decimal.h"
 
 int get_sign(s21_decimal *d) {
   unsigned int mask = 1u << 31;
@@ -279,7 +203,7 @@ int s21_is_equal(s21_decimal a, s21_decimal b) {
       }
     }
   } else if (!a.bits[0] && !a.bits[1] && !a.bits[2] && !b.bits[0] &&
-             !b.bits[1] && !b.bits[2]) {
+              !b.bits[1] && !b.bits[2]) {
     res = 1;
   } else {
     res = 0;
