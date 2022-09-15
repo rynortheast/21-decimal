@@ -1,6 +1,7 @@
 #ifndef SRC_S21_AUXILIARY_H_
 #define SRC_S21_AUXILIARY_H_
 
+int getExp(float * value);
 int getSign(s21_decimal value);
 int getScale(s21_decimal value);
 void setSign(s21_decimal * value, int sign);                //  Желательно убрать VOID

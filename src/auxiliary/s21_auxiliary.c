@@ -1,5 +1,10 @@
 #include "./../s21_decimal.h"
 
+int getExp(float * value) {
+    int * valueInt = (int *) src;
+    return ((*valueInt & ~(1u << 31)) >> 23) - 127;
+}
+
 int getSign(s21_decimal value) {
   return !!(value.bits[3] & (1u << 31));
 }
