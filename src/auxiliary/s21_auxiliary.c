@@ -1,8 +1,7 @@
 #include "./../s21_decimal.h"
 
 int getExp(float * value) {
-    int * valueInt = (int *) src;
-    return ((*valueInt & ~(1u << 31)) >> 23) - 127;
+    return ((*((int *) value) & ~(1u << 31)) >> 23) - 127;
 }
 
 int getSign(s21_decimal value) {
@@ -14,8 +13,8 @@ int getScale(s21_decimal value) {
 }
 
 void setSign(s21_decimal * value, int sign) {
-  if (sign == (-1)) value->bits[3] | (1u << 31);  // Почему здесь sign = -1?
-  else value->bits[3] & ~(1u << 31);
+  // Почему здесь sign = -1?
+  value->bits[3] = (sign == -1) ? (value->bits[3] | (1u << 31)) : (value->bits[3] & ~(1u << 31));
 }
 
 int getBit(s21_decimal value, int bit) {
@@ -28,13 +27,19 @@ void setScale(s21_decimal * value, int scale) {
     value->bits[3] &= ~(0xFF << 16);
     value->bits[3] |= scale << 16;
   }
-  sign ? setSign(value, 1) : 0; // Почему здесь меняется знак? Почему нельзя это нельзя выполнить в начале?
+  if (sign) setSign(value, 1); // Почему здесь меняется знак? Почему нельзя это нельзя выполнить в начале?
 }
 
+// Возможно тут есть ошибка 
 // Очень странная функция. Она будто бессмысленна, т.к. изначальный её вид вообще
 // не учитывал возможность отрицательного исхода.
 int isNull(s21_decimal value) {
-  return (&value) ? (!value.bits[0] && !value.bits[1] && !value.bits[2]) : 0;
+  int res;
+  s21_decimal *ptr = &value;
+  if (ptr) {
+      res = !value.bits[0] && !value.bits[1] && !value.bits[2];
+  }
+  return res;
 }
 
 // Необходим рефактиринг
