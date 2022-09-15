@@ -6,14 +6,15 @@ convertors = $(wildcard ./convertors/*.c)
 comparison = $(wildcard ./comparison/*.c)
 arithmetics = $(wildcard ./arithmetics/*.c)
 comparision = $(wildcard ./comparision/*.c)
+other = $(wildcard ./other/*.c)
 
 HEADER = $(wildcard ./*.h)
-FILES = $(auxiliary) $(convertors) $(comparison) $(arithmetics) $(comparision)
+FILES = $(auxiliary) $(convertors) $(comparison) $(arithmetics) $(comparision) $(other)
 
 all: s21_math.a
 
 s21_math.a: 
-	gcc $(FLAGS) $(FILES)
+	gcc $(FLAGS) $(FILES) s21_test.c
 	# ar rc s21_math.a $(FILES_o)
 	# rm -f $(FILES_o)
 

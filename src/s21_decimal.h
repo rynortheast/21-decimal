@@ -20,5 +20,7 @@ typedef union {
 #include "s21_auxiliary.h"
 #include "s21_comparison.h"
 #include "s21_arithmetics.h"
+#include "s21_convertors.h"
+#include "s21_other.h"
 
 #endif  //  SRC_S21_DECIMAL_H_
