@@ -6,7 +6,7 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   int result_sign = 5;
   int sign1 = getSign(value_1);
   int sign2 = getSign(value_2);
-  scale_equalize(&value_1, &value_2);
+  scaleAlignment(&value_1, &value_2);
   if (sign1 != sign2) {
     result_sign = sign1;
     setSign(&value_1, 0);

@@ -1,36 +1,30 @@
 #include "./../s21_decimal.h"
 
-int s21_is_greater(s21_decimal a, s21_decimal b) {
-  int res = 0;
-  int sign1 = getSign(a);
-  int sign2 = getSign(b);
-  if (!isNull(a) && !isNull(b)) {
-    if (sign1 == 0 && sign2 == 1) {
-      res = 1;
-    } else if (sign1 == 1 && sign2 == 0) {
-      res = 0;
-    } else if (sign1 == sign2) {
-      scale_equalize(&a, &b);
-      for (int i = 95; i >= 0; i--) {
-        int bit1 = getBit(a, i);
-        int bit2 = getBit(b, i);
-        if (bit1 != bit2) {
-          if (!(bit1 == 0) && bit2 == 0 && sign1 == 0) {
-            res = 1;
-            break;
-          } else if (!(bit1 == 0) && bit2 == 0 && sign1 == 1) {
-            res = 0;
-            break;
-          } else if (!(bit2 == 0) && sign1 == 0) {
-            res = 0;
-            break;
-          } else if (!(bit2 == 0) && sign1 == 1) {
-            res = 1;
-            break;
-          }
+int s21_is_greater(s21_decimal value_1, s21_decimal value_2) {
+    int res = 0;
+    int sign_a = getSign(value_1), sign_b = getSign(value_2);
+    if (!(isNull(value_1) && isNull(value_2))) {
+        if (sign_a != sign_b) {
+            if (sign_a == 0) {
+                res = 1;
+            } else {
+                res = 0;
+            }
+        } else {
+            scaleAlignment(&value_1, &value_2);
+            for (int i = 95; i >= 0; i--) {
+                int bit_a = getBit(value_1, i), bit_b = getBit(value_2, i);
+                if (bit_a != bit_b) {
+                    if (bit_a != 0) {
+                        res = (sign_a == 0) ? 1 : 0;
+                        break;
+                    } else {
+                        res = (sign_a == 0) ? 0 : 1;
+                        break;
+                    }
+                }
+            }  
         }
-      }
     }
-  }
-  return res;
+    return res;
 }

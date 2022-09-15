@@ -39,7 +39,7 @@ void scaleIncrease(s21_decimal * value, int shift) {
         s21_decimal tmp = *value, tmp1 = *value;
         shiftLeft(&tmp, 1);
         shiftLeft(&tmp1, 3);
-        if (bit_addition(&tmp, &tmp1, value)) {
+        if (addBit(&tmp, &tmp1, value)) {
             setBit(value, 96, 1);
         }
     }
@@ -82,13 +82,15 @@ void shiftLeft(s21_decimal * value, int shift) {
     }
 }
 
-int norm_scale(s21_decimal *a, s21_decimal *b) {
+//  Необходим рефакторинг
+//  Зачем здесь переменная res, кек?
+int scaleAlignment(s21_decimal * value_1, s21_decimal * value_2) {
     int res = 0;
-    if (getScale(*a) != getScale(*b)) {
-        if (getScale(*a) < getScale(*b)) {
-            norm_scale(b, a);
+    if (getScale(*value_1) != getScale(*value_2)) {
+        if (getScale(*value_1) < getScale(*value_2)) {
+            scaleAlignment(value_2, value_1);
         } else {
-            s21_decimal *high = a, *low = b;
+            s21_decimal * high = value_1, * low = value_2;
             s21_decimal tmp = {0};
             int scaleLow = getScale(*low), scaleHigh = getScale(*high);
             int diff_scale = scaleHigh - scaleLow;
@@ -103,103 +105,56 @@ int norm_scale(s21_decimal *a, s21_decimal *b) {
                     break;
                 }
             }
-            res = 0;
+            setScale(&tmp, scaleLow);
+            diff_scale = scaleHigh - scaleLow;
+            while (diff_scale) {
+                scaleDecrease(high, diff_scale);
+                setScale(high, scaleLow);
+                diff_scale--;
+                res = 0;
+            }
         }
     }
     return res;
 }
 
-int scale_equalize(s21_decimal *a, s21_decimal *b) {
-  s21_decimal *big = NULL;
-  s21_decimal *small = NULL;
-  s21_decimal temp;
-  temp.bits[0] = temp.bits[1] = temp.bits[2] = temp.bits[3] = 0;
-  int per = 0;
-  int out = 1;
-  if (getScale(*a) != getScale(*b)) {
-    if (getScale(*a) > getScale(*b)) {
-      big = a;
-      small = b;
-      per = 1;
-    } else {
-      big = b;
-      small = a;
+//  Необходим рефакторинг
+int addBit(s21_decimal * value_1, s21_decimal * value_2, s21_decimal * result) {
+    int fres = 0, exp = 0;
+    for (int i = 0; i < 96; i++) {
+        int bit_a = getBit(*value_1, i), bit_b = getBit(*value_2, i);
+        if (!bit_a && !bit_b) {
+            if (exp) {
+                setBit(result, i, 1);
+                exp = 0;
+            } else {
+                setBit(result, i, 0);
+            }
+        } else if (bit_a != bit_b) {
+            if (exp) {
+                setBit(result, i, 0);
+                exp = 1;
+            } else {
+                setBit(result, i, 1);
+            }
+        } else {
+            if (exp) {
+                setBit(result, i, 1);
+                exp = 1;
+            } else {
+                setBit(result, i, 0);
+                exp = 1;
+            }
+        }
+        if (i == 95 && exp == 1 && !getBit(*value_1, 97) && !getBit(*value_2, 97)) {
+        fres = 1;
+        }
     }
-    int scaleSmall = getScale(*small);
-    int scaleBig = getScale(*big);
-    int newscale = scaleBig - scaleSmall;
-    while (newscale) {
-      temp.bits[0] = small->bits[0];
-      temp.bits[1] = small->bits[1];
-      temp.bits[2] = small->bits[2];
-      temp.bits[3] = small->bits[3];
-      scaleIncrease(small, 1);
-      if (!getBit(*small, 96)) {
-        s21_copy(&temp, *small);
-        scaleSmall++;
-        newscale--;
-      } else {
-        s21_copy(small, temp);
-        break;
-      }
-    }
-    setScale(&temp, scaleSmall);
-    int newScale2 = scaleBig - scaleSmall;
-    while (newScale2) {
-      s21_scale_decrease(big, newScale2);
-      setScale(big, scaleSmall);
-      newScale2--;
-    }
-    if (per) {
-      a = big;
-      b = &temp;
-    } else {
-      a = &temp;
-      b = big;
-    }
-    out = 0;
-  }
-  return out;
+    return fres;
 }
 
-int bit_addition(s21_decimal *a, s21_decimal *b, s21_decimal *res) {
-  int e = 0;
-  int resultat = 0;
-  for (int i = 0; i < 96; i++) {
-    int bit1 = getBit(*a, i);
-    int bit2 = getBit(*b, i);
-
-    if (!bit1 && !bit2) {
-      if (e) {
-        setBit(res, i, 1);
-        e = 0;
-      } else {
-        setBit(res, i, 0);
-      }
-    } else if (bit1 != bit2) {
-      if (e) {
-        setBit(res, i, 0);
-        e = 1;
-      } else {
-        setBit(res, i, 1);
-      }
-    } else {
-      if (e) {
-        setBit(res, i, 1);
-        e = 1;
-      } else {
-        setBit(res, i, 0);
-        e = 1;
-      }
-    }
-    if (i == 95 && e == 1 && !getBit(*a, 97) && !getBit(*b, 97)) {
-      resultat = 1;
-    }
-  }
-  return resultat;
-}
-
-void s21_scale_decrease(s21_decimal *value, int shift) {
+//  Необходим рефакторинг
+void scaleDecrease(s21_decimal * value, int shift) {
   int i, tmp, j = 0;
   unsigned long long overflow;
   while (j < shift) {
@@ -223,7 +178,7 @@ void convert(s21_decimal *d) {
   d->bits[0] = ~d->bits[0];
   d->bits[1] = ~d->bits[1];
   d->bits[2] = ~d->bits[2];
-  bit_addition(d, &add, &result);
+  addBit(d, &add, &result);
 
   d->bits[0] = result.bits[0];
   d->bits[1] = result.bits[1];
