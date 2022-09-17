@@ -7,7 +7,7 @@ int getBit(s21_decimal value, int bit) {
 
 int getBitLast(s21_decimal value) {
   int bitLast = 95;
-  for (; (bit >= 0) && (getBit(value, bitLast) == 0); bitLast -= 1);
+  for (; (bitLast >= 0) && (getBit(value, bitLast) == 0); bitLast -= 1);
   return bitLast;
 }
 
@@ -73,7 +73,7 @@ s21_decimal * decreaseScale(s21_decimal * value, int shift) {
     unsigned long long overflow = value->bits[2];
     for (int x = 2; x >= 0; x -= 1) {
       value->bits[x] = overflow / 10;
-      overflow = (overflow % 10) * (UINT_MAX + 1) + value->bits[i];
+      overflow = (overflow % 10) * (UINT_MAX + 1) + value->bits[x];
     }
   }
   setScale(value, (getScale(*value) - shift));
@@ -87,22 +87,19 @@ void alignmentScale(s21_decimal * value_1, s21_decimal * value_2) {
     if (getScale(*value_1) < getScale(*value_2)) {
       alignmentScale(value_2, value_1);
     } else {
-      int scaleLow = getScale(*low), scaleHigh = getScale(*high);
+      int scaleLow = getScale(*value_2), scaleHigh = getScale(*value_1);
       for (; scaleHigh - scaleLow; scaleLow += 1) {
-        if (!getBit(*low, 96))
+        if (!getBit(*value_2, 96))
           increaseScale(value_2, 1);
         break;
       }
 
       // TODO [alignmentScale] Необходимо обсудить V
       // Если я все правильно понимаю, то реализовать
-      // это можно одной строкой в цикле выше.
-      s21_decimal * high = value_1, * low = value_2;
-      int diff_scale = scaleHigh - scaleLow;
-      while (scaleHigh - scaleLow) {
-          decreaseScale(high, diff_scale);
-          setScale(high, scaleLow);
-          diff_scale--;
+      // это можно одной строкой в цикле выше. НЕТ.
+      for (; scaleHigh - scaleLow; scaleHigh -= 1) {
+        decreaseScale(value_1, scaleHigh - scaleLow);
+        setScale(value_1, scaleLow);
       }
     }
   }
@@ -128,6 +125,7 @@ s21_decimal * convert(s21_decimal * value) {
   for (int x = 0; x < 3; x += 1)
     value->bits[x] = result.bits[x];
   setBit(value, 97, 1);
+  return value;
 }
 
 // TODO [isNull] Что вернет res если value не существует? Что тут вообще происходит?

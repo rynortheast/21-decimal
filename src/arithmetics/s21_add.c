@@ -24,9 +24,9 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
       setScale(setSign(result, valueSign_1), getScale(value_1));
     }
   } else if (valueSign_1 && !valueSign_2) {
-    status = s21_sub(value_2, setSign(&value_1, 0), result);
+    status = s21_sub(value_2, *setSign(&value_1, 0), result);
   } else if (!valueSign_1 && valueSign_2) {
-    status = s21_sub(value_1, setSign(&value_2, 0), result);
+    status = s21_sub(value_1, *setSign(&value_2, 0), result);
   }
   return status;
 }

@@ -15,7 +15,7 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
   // + - + = -
 
   if (valueSign_1 != valueSign_2) {
-    status = s21_add(setSign(&value_1, 0), setSign(&value_2, 0), result);
+    status = s21_add(*setSign(&value_1, 0), *setSign(&value_2, 0), result);
     setSign(result, valueSign_1);
   } else {
     alignmentScale(&value_1, &value_2);
@@ -23,10 +23,10 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
       setSign(&value_1, 0);
       setSign(&value_2, 0);
       if (s21_is_less(value_1, value_2)) {
-        status = s21_add(convert(&value_1), value_2, result);
+        status = s21_add(*convert(&value_1), value_2, result);
         setSign(result, !valueSign_2);
       } else {
-        status = s21_add(convert(&value_2), value_1, result);
+        status = s21_add(*convert(&value_2), value_1, result);
         setSign(result, valueSign_1);
       }
     }
