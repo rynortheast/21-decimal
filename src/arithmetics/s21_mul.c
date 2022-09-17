@@ -1,5 +1,9 @@
 #include "./../s21_decimal.h"
 
+// TODO [s21_mul] Почему нельзя реализовать эту функцию через операторы + и - ?
+// Если коротко, то из четырех возможных резльтутатов функции + и - покрывают три,
+// последним является деление на ноль, что по логике только и нужно обработать здесь.
+
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
   int res = 0;
@@ -19,8 +23,8 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
     if (value_bit_1) {
       tmp_res = value_2;
-      shiftLeft(&tmp_res, i);
-      res = addBit(result, &tmp_res, result);
+      leftShift(&tmp_res, i);
+      res = addBit(*result, tmp_res, result);
     }
   }
   if (res) {
@@ -37,7 +41,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         break;
       }
       int scale2 = getScale(*value_1_1);
-      scaleDecrease(value_1_1, 1);
+      decreaseScale(value_1_1, 1);
       setScale(value_1_1, --scale2);
       return s21_mul(*value_1_1, *value_2_1, result);
     }

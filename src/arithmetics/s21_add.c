@@ -1,37 +1,32 @@
 #include "./../s21_decimal.h"
 
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
-  int res = 5;
-  int sign1 = getSign(value_1);
-  int sign2 = getSign(value_2);
-  if (sign1 == sign2) {
-    scaleAlignment(&value_1, &value_2);
-    if (addBit(&value_1, &value_2, result)) {
-      if ((getScale(value_1) == 0 || getScale(value_2) == 0) &&
-          sign1 == 0) {
-        res = 1;
-      } else if ((getScale(value_1) == 0 || getScale(value_2) == 0) &&
-                  sign1 == 1) {
-        res = 2;
+// TODO [s21_add] Без понятий какое должно быть начальное значение status
+// Что возвращает функция getSign? Минус это 0?
+// Если знаки равны, то значения суммируются. Если не равны, то вычитаются. Зачем там делают setSign?
+// Из 4 возможных исходов работают только три - ОК, INF, -INF. 
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
+  int status = 0, valueSign_1 = getSign(value_1), valueSign_2 = getSign(value_2);
+  for (int x = 0; x < 4; x += 1)
+    result->bits[x] = 0;
+  if (valueSign_1 == valueSign_2) {
+    alignmentScale(&value_1, &value_2);
+    if (addBit(value_1, value_2, result)) {
+      if ((!getScale(value_1) || !getScale(value_2)) && !valueSign_1) {
+        status = 1;
+      } else if ((!getScale(value_1) || !getScale(value_2)) && valueSign_1) {
+        status = 2;
       } else if (getScale(value_1) > 0 && getScale(value_2) > 0) {
-        scaleDecrease(&value_1, 1);
-        scaleDecrease(&value_2, 1);
-        setScale(&value_1, getScale(value_1) - 1);
-        setScale(&value_2, getScale(value_2) - 1);
-        res = s21_add(value_1, value_2, result);
+        setScale(decreaseScale(&value_1, 1), getScale(value_1) - 1);
+        setScale(decreaseScale(&value_2, 1), getScale(value_2) - 1);
+        status = s21_add(value_1, value_2, result);
       }
     } else {
-      setSign(result, sign1);
-      setScale(result, getScale(value_1));
-      res = 0;
+      setScale(setSign(result, valueSign_1), getScale(value_1));
     }
-  } else if (getSign(value_1) && !getSign(value_2)) {
-    setSign(&value_1, 0);
-    res = s21_sub(value_2, value_1, result);
-  } else if (!getSign(value_1) && getSign(value_2)) {
-    setSign(&value_2, 0);
-    res = s21_sub(value_1, value_2, result);
+  } else if (valueSign_1 && !valueSign_2) {
+    status = s21_sub(value_2, setSign(&value_1, 0), result);
+  } else if (!valueSign_1 && valueSign_2) {
+    status = s21_sub(value_1, setSign(&value_2, 0), result);
   }
-  return res;
+  return status;
 }

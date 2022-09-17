@@ -1,5 +1,7 @@
 #include "./../s21_decimal.h"
 
+// TODO [s21_mod] Он прошел вертер?
+
 int s21_mod(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
   result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
   int res = 5;

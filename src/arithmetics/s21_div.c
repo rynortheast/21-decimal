@@ -1,6 +1,17 @@
 #include "./../s21_decimal.h"
 
-//  Разве здесь нельзя реализовать функцию через цикл и минус?
+// TODO [s21_div] Почему нельзя реализовать эту функцию через операторы + и - ?
+// Если коротко, то из четырех возможных резльтутатов функции + и - покрывают три,
+// последним является деление на ноль, что по логике только и нужно обработать здесь.
+
+// 0. Проверяем, что второе значением не равно нулю
+// 1. ЦИКЛ. Проверяем, что значение1 > значения2
+// 2. Используем s21_sub
+// 3. Продолжаем если возврощаемое значение равно нулю.
+// 4. Если значение не равно нулю, то отправляем в return для s21_div.
+
+// Result будет пустым в случаем провала?
+// Result может быть вещественным? 
 
 int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result, s21_decimal *tmp);
 
@@ -32,13 +43,13 @@ int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result, s21_
     if (getBit(value_1, i)) setBit(tmp, 0, 1);
     if (s21_is_greater_or_equal(*tmp, value_2)) {
       s21_sub(*tmp, value_2, tmp);
-      if (i != 0) shiftLeft(tmp, 1);
+      if (i != 0) leftShift(tmp, 1);
       if (getBit(value_1, i - 1)) setBit(tmp, 0, 1);
-      shiftLeft(result, 1);
+      leftShift(result, 1);
       setBit(result, 0, 1);
     } else {
-      shiftLeft(result, 1);
-      if (i != 0) shiftLeft(tmp, 1);
+      leftShift(result, 1);
+      if (i != 0) leftShift(tmp, 1);
       if ((i - 1) >= 0 && getBit(value_1, i - 1)) setBit(tmp, 0, 1);
     }
   }
