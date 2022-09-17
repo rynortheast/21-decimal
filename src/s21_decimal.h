@@ -1,7 +1,7 @@
 #ifndef SRC_S21_DECIMAL_H_
 #define SRC_S21_DECIMAL_H_
 
-// #include <stdbool.h>
+#include <limits.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -14,7 +14,6 @@ typedef union {
   float fl;
 } fbits;
 
-#define S21_MAX_UINT 4294967295
 #define S21_INF 1.0 / 0.0
 
 #include "s21_auxiliary.h"

@@ -11,7 +11,7 @@ int s21_is_greater(s21_decimal value_1, s21_decimal value_2) {
                 res = 0;
             }
         } else {
-            scaleAlignment(&value_1, &value_2);
+            alignmentScale(&value_1, &value_2);
             for (int i = 95; i >= 0; i--) {
                 int bit_a = getBit(value_1, i), bit_b = getBit(value_2, i);
                 if (bit_a != bit_b) {

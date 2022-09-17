@@ -24,7 +24,7 @@ void TEST_func_scaleAlignment() {
     printf("TEST: %d | %d | %u | %u\n", TEST_1.bits[0], TEST_1.bits[1], TEST_1.bits[2], TEST_1.bits[3]);
     printf("TEST: %d | %d | %u | %u\n\n", TEST_2.bits[0], TEST_2.bits[1], TEST_2.bits[2], TEST_2.bits[3]);
 
-    scaleAlignment(&TEST_1, &TEST_2);
+    alignmentScale(&TEST_1, &TEST_2);
 
     printf("TEST: %d | %d | %u | %u\n", TEST_1.bits[0], TEST_1.bits[1], TEST_1.bits[2], TEST_1.bits[3]);
     printf("TEST: %d | %d | %u | %u\n\n", TEST_2.bits[0], TEST_2.bits[1], TEST_2.bits[2], TEST_2.bits[3]);

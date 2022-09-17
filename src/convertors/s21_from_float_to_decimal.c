@@ -1,7 +1,7 @@
 #include "./../s21_decimal.h"
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
-    int res = 1, exp = getExp(&src);
+    int res = 1, exp = getFloatExp(&src);
     if (dst && src != 0 && (src != S21_INF || src != -S21_INF)) {
         dst->bits[0] = 0; dst->bits[1] = 0;
         dst->bits[2] = 0; dst->bits[3] = 0;
@@ -21,7 +21,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
         for (; fmod(tmp, 10) == 0 && scale > 0; scale--, tmp /= 10) {
         }
         mant.fl = tmp;
-        exp = getExp(&mant.fl);
+        exp = getFloatExp(&mant.fl);
         setBit(dst, exp, 1);
         for (int i = exp - 1, j = 22; j >= 0; i--, j--) {
             if ((mant.ui & (1 << j)) != 0) {
