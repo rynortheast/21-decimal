@@ -5,9 +5,9 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     if (dst && src != 0 && (src != S21_INF || src != -S21_INF)) {
         dst->bits[0] = 0; dst->bits[1] = 0;
         dst->bits[2] = 0; dst->bits[3] = 0;
-        int sign = 1;
+        int sign = 0;
         if (src < 0) {
-        src *= -1; sign = -1;
+        src *= -1; sign = 1;
         }
         double tmp = (double)src;
         int scale = 0;

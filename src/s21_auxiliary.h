@@ -13,7 +13,7 @@ s21_decimal * decreaseScale(s21_decimal * value, int shift);
 void alignmentScale(s21_decimal * value_1, s21_decimal * value_2);
 
 int getSign(s21_decimal value);
-s21_decimal * setSign(s21_decimal * value, int sign);
+s21_decimal * setSign(s21_decimal * value, int bit);
 
 s21_decimal * convert(s21_decimal * value);
 int isNull(s21_decimal value);

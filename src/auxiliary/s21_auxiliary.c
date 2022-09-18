@@ -1,6 +1,5 @@
 #include "./../s21_decimal.h"
 
-//  TODO [getBit] Можно ли здесь использовать оператор %?
 int getBit(s21_decimal value, int bit) {
   return !!(value.bits[bit / 32] & (1u << (bit % 32)));
 }
@@ -11,7 +10,6 @@ int getBitLast(s21_decimal value) {
   return bitLast;
 }
 
-//  TODO [setBit] Можно ли здесь использовать операторы / и %?
 s21_decimal * setBit(s21_decimal * value, int pos, int bit) {
   if (pos / 32 < 4 && bit) 
     value->bits[pos / 32] |= (1u << (pos % 32));
@@ -20,9 +18,7 @@ s21_decimal * setBit(s21_decimal * value, int pos, int bit) {
   return value;
 }
 
-//  TODO [addBit] Что делает эта функция?
-//  TODO [addBit] Что значит переменная fres?
-//  TODO [addBit] Можно ли IF на 38 строке убрать из цикла?
+//  TODO [addBit] Разобраться в этой функции
 int addBit(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
   int fres = 0, exp = 0;
   for (int i = 0; i < 96; i += 1) {
@@ -45,9 +41,9 @@ int getScale(s21_decimal value) {
   return (char) (value.bits[3] >> 16);
 }
 
-//  TODO [setScale] Обязательно ли вызывать setSign в конце функции?
+//  TODO [setScale] Проверить эту функции, сравнить два варианта.
 s21_decimal * setScale(s21_decimal * value, int scale) {
-  int sign = getSign(*value) ? 1 : 0;
+  int sign = getSign(*value);
   if (scale > 0 && scale < 28) {
     value->bits[3] &= ~(0xFF << 16);
     value->bits[3] |= scale << 16;
@@ -56,7 +52,7 @@ s21_decimal * setScale(s21_decimal * value, int scale) {
   return value;
 }
 
-//  TODO [increaseScale] Что проверяяет второй IF?
+//  TODO [increaseScale] Зачем тут нужен addBit?
 s21_decimal * increaseScale(s21_decimal * value, int shift) {
   if (getScale(*value) + shift < 29) {
     setScale(value, getScale(*value) + shift);
@@ -67,7 +63,7 @@ s21_decimal * increaseScale(s21_decimal * value, int shift) {
   return value;
 }
 
-//  TODO [decreaseScale] Это точно работает правильно? Напрягает как используется переменная overflow
+//  TODO [decreaseScale] Протестировать переменную overflow, разобраться
 s21_decimal * decreaseScale(s21_decimal * value, int shift) {
   for (int y = 0; y < shift; y += 1) {
     unsigned long long overflow = value->bits[2];
@@ -80,8 +76,6 @@ s21_decimal * decreaseScale(s21_decimal * value, int shift) {
   return value;
 }
 
-//  TODO [alignmentScale] Первоначально функция возвращала INT, но это неиспользовалось.
-//  TODO [alignmentScale] Здесь лучше внимательно изучить переписанный первый цикл, сравнить со старым.
 void alignmentScale(s21_decimal * value_1, s21_decimal * value_2) {
   if (getScale(*value_1) != getScale(*value_2)) {
     if (getScale(*value_1) < getScale(*value_2)) {
@@ -93,10 +87,6 @@ void alignmentScale(s21_decimal * value_1, s21_decimal * value_2) {
           increaseScale(value_2, 1);
         break;
       }
-
-      // TODO [alignmentScale] Необходимо обсудить V
-      // Если я все правильно понимаю, то реализовать
-      // это можно одной строкой в цикле выше. НЕТ.
       for (; scaleHigh - scaleLow; scaleHigh -= 1) {
         decreaseScale(value_1, scaleHigh - scaleLow);
         setScale(value_1, scaleLow);
@@ -109,9 +99,9 @@ int getSign(s21_decimal value) {
   return !!(value.bits[3] & (1u << 31));
 }
 
-//  TODO [setSign] Как sign может прийти -1? Нашел такой прикол в s21_from_float_to_decimal, s21_from_int_to_decimal, s21_negate
-s21_decimal * setSign(s21_decimal * value, int sign) {
-  value->bits[3] = (sign == -1) ? (value->bits[3] | (1u << 31)) : (value->bits[3] & ~(1u << 31));
+//  TODO [setSign] Разобраться как работает у челов и Тёмы, т.к. он использует -1
+s21_decimal * setSign(s21_decimal * value, int bit) {
+  value->bits[3] = (bit) ? (value->bits[3] | (1u << 31)) : (value->bits[3] & ~(1u << 31));
   return value;
 }
 
@@ -128,22 +118,22 @@ s21_decimal * convert(s21_decimal * value) {
   return value;
 }
 
-// TODO [isNull] Что вернет res если value не существует? Что тут вообще происходит?
+// TODO [isNull] Надо проверить как это работает
 // Мы получаем значение, помещаем его в новую память и спрашиваем существует ли эта память?
 int isNull(s21_decimal value) {
-  int res;
-  s21_decimal *ptr = &value;
-  if (ptr) {
-      res = !value.bits[0] && !value.bits[1] && !value.bits[2];
-  }
-  return res;
+  // int res; 
+  // s21_decimal * ptr = &value;
+  // if (ptr) {
+  //     res = !value.bits[0] && !value.bits[1] && !value.bits[2];
+  // }
+  return !value.bits[0] && !value.bits[1] && !value.bits[2];
 }
 
 int getFloatExp(float * value) {
   return ((*((int *) value) & ~(1u << 31)) >> 23) - 127;
 }
 
-// TODO [leftShift] Нужны ли тут переменные last_bit_1 и last_bit_2?
+// TODO [leftShift] Рефакторинг
 s21_decimal * leftShift(s21_decimal * value, int shift) {
     if (!(getBitLast(*value) + shift > 95)) {
         for (int y = 0; y < shift; y += 1) {

@@ -1,9 +1,8 @@
 #include "./../s21_decimal.h"
 
 // TODO [s21_add] Без понятий какое должно быть начальное значение status
-// Что возвращает функция getSign? Минус это 0?
-// Если знаки равны, то значения суммируются. Если не равны, то вычитаются. Зачем там делают setSign?
-// Из 4 возможных исходов работают только три - ОК, INF, -INF. 
+// TODO [s21_add] Не должны ли мы обнулять result если оператор не сработал?
+
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
   int status = 0, valueSign_1 = getSign(value_1), valueSign_2 = getSign(value_2);
   for (int x = 0; x < 4; x += 1)
