@@ -1,7 +1,7 @@
 #include <check.h>
 #include <stdio.h>
 
-#include "./../HEADERS/s21_decimal.h"
+#include "./../s21_decimal.h"
 
 START_TEST(is_less_0) {
   s21_decimal val1 = {0};

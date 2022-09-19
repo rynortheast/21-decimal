@@ -1,4 +1,4 @@
-#include "./../HEADERS/s21_decimal.h"
+#include "./../s21_decimal.h"
 
 // TODO [s21_add] Без понятий какое должно быть начальное значение status
 // TODO [s21_add] Не должны ли мы обнулять result если оператор не сработал?

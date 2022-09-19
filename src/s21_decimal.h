@@ -16,10 +16,10 @@ typedef union {
 
 #define S21_INF 1.0 / 0.0
 
-#include "s21_auxiliary.h"
-#include "s21_comparison.h"
-#include "s21_arithmetics.h"
-#include "s21_convertors.h"
-#include "s21_other.h"
+#include "./HEADERS/s21_auxiliary.h"
+#include "./HEADERS/s21_comparison.h"
+#include "./HEADERS/s21_arithmetics.h"
+#include "./HEADERS/s21_convertors.h"
+#include "./HEADERS/s21_other.h"
 
 #endif  //  SRC_S21_DECIMAL_H_
