@@ -1,14 +1,6 @@
 #include "./../s21_decimal.h"
 
 int s21_truncate(s21_decimal value, s21_decimal * result) {
-    int scale = getScale(value);
-    if (scale) {
-        s21_decimal tmp = {0};
-        s21_copy(&tmp, value);
-        decreaseScale(&tmp, scale);
-        s21_copy(result, tmp);
-    } else {
-        s21_copy(result, value);
-    }
-    return 0;
+  s21_copy(s21_reset(result), getScale(value) ? *decreaseScale(&value, getScale(value)) : value);
+  return 0;
 }
