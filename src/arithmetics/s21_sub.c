@@ -1,4 +1,4 @@
-#include "./../s21_decimal.h"
+#include "./../HEADERS/s21_decimal.h"
 
   // - - - = -
   // - - + = + (-)

@@ -1,4 +1,4 @@
-#include "./../s21_decimal.h"
+#include "./../HEADERS/s21_decimal.h"
 
 // TODO [s21_round] Что за 127 бит?   
 // TODO [s21_round] Необходимо провести дополнительные тесты                                                                    с

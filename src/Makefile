@@ -14,7 +14,7 @@ FILES = $(auxiliary) $(convertors) $(comparison) $(arithmetics) $(comparision) $
 all: s21_math.a
 
 s21_math.a: 
-	gcc $(FLAGS) $(FILES) DECIMAL_TEST.c -lcheck
+	gcc $(FLAGS) $(FILES) ./TESTS/SUITE_01.c -lcheck
 	# ar rc s21_math.a $(FILES_o)
 	# rm -f $(FILES_o)
 

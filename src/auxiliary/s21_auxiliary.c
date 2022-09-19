@@ -1,4 +1,4 @@
-#include "./../s21_decimal.h"
+#include "./../HEADERS/s21_decimal.h"
 
 int getBit(s21_decimal value, int bit) {
   return !!(value.bits[bit / 32] & (1u << (bit % 32)));
