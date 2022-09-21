@@ -39,6 +39,10 @@ gcov_report:
 	rm -f *.gcno *.gcda *.info report.out *.gcov
 	open ./report/index-sort-f.html
 
+personal: s21_decimal.a ./TESTS/personal.c
+	gcc $(CFLAGS) ./TESTS/personal.c s21_decimal.a -o test.out -lcheck
+	./test.out
+
 rebuild: clean all
 
 clean:
