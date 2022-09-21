@@ -385,7 +385,7 @@ START_TEST(is_equal_0) {
   s21_decimal val1 = {{0, 0, 0, 0}};
   s21_decimal val2 = {{0, 0, 0, 0}};
   setSign(&val2, 1);
-  ck_assert_int_eq(0, s21_is_equal(val1, val2));
+  ck_assert_int_eq(1, s21_is_equal(val1, val2));
 }
 END_TEST
 
@@ -885,7 +885,7 @@ START_TEST(add_17) {
   setScale(&val1, 5);
   setScale(&val2, 3);
   s21_decimal res;
-  ck_assert_int_eq(0, s21_add(val1, val2, &res));
+  ck_assert_int_eq(1, s21_add(val1, val2, &res));
 }
 END_TEST
 
@@ -897,7 +897,7 @@ START_TEST(add_18) {
   setScale(&val1, 5);
   setScale(&val2, 3);
   s21_decimal res;
-  ck_assert_int_eq(0, s21_add(val1, val2, &res));
+  ck_assert_int_eq(2, s21_add(val1, val2, &res));
 }
 END_TEST
 
@@ -1110,38 +1110,149 @@ START_TEST(mod_4) {
 }
 END_TEST
 
+START_TEST(truncate_0) {
+  s21_decimal val = {{7, 7, 7, 0}};
+  s21_decimal res = {0};
+  ck_assert_int_eq(0, s21_truncate(val, &res));
+    float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = 129127208515966861312.0;
+  ck_assert_float_eq(need, fres);
+}
+END_TEST
+
+START_TEST(truncate_1) {
+  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
+  s21_decimal res = {0};
+  ck_assert_int_eq(0, s21_truncate(val, &res));
+    float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = -2.0;
+  ck_assert_float_eq(need, fres);
+}
+END_TEST
+
+START_TEST(truncate_2) {
+  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
+  s21_decimal res = {0};
+  ck_assert_int_eq(0, s21_truncate(val, &res));
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = -2.0;
+  ck_assert_float_eq(need, fres);
+}
+END_TEST
+
+START_TEST(truncate_3) {
+  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
+  s21_decimal res = {0};
+  setScale(&val, 5);
+  ck_assert_int_eq(0, s21_truncate(val, &res));
+      float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = -0.0;
+  ck_assert_float_eq(need, fres);
+}
+
+START_TEST(truncate_4) {
+  s21_decimal val = {{128, 0, 0, 0}};
+  s21_decimal res = {0};
+  setScale(&val, 1);
+  ck_assert_int_eq(0, s21_truncate(val, &res));
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = 12;
+  ck_assert_float_eq(need, fres);
+}
+
 START_TEST(negate_0) {
   s21_decimal val = {{2, 0, 0, 0}};
   s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_negate(val, &res));
+  int sign_before = getSign(val);
+  s21_negate(val, &res);
+  int sign_after = getSign(res);
+
+  ck_assert_int_ne(sign_before, sign_after);
 }
 END_TEST
 
 START_TEST(negate_1) {
   s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
   s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_negate(val, &res));
+  int sign_before = getSign(val);
+  s21_negate(val, &res);
+  int sign_after = getSign(res);
+  ck_assert_int_ne(sign_before, sign_after);
 }
 END_TEST
 
 START_TEST(negate_2) {
   s21_decimal val = {{0, 0, 0, ~(UINT_MAX / 2)}};
   s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_negate(val, &res));
+  int sign_before = getSign(val);
+  s21_negate(val, &res);
+  int sign_after = getSign(res);
+  ck_assert_int_ne(sign_before, sign_after);
 }
 END_TEST
 
 START_TEST(negate_3) {
   s21_decimal val = {0};
   s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_negate(val, &res));
+  int sign_before = getSign(val);
+  s21_negate(val, &res);
+  int sign_after = getSign(res);
+  ck_assert_int_ne(sign_before, sign_after);
+}
+END_TEST
+
+START_TEST(floor_0) {
+  s21_decimal val = {{2, 0, 0, 0}};
+  s21_decimal res = {0};
+  ck_assert_int_eq(0, s21_floor(val, &res));
+}
+END_TEST
+
+START_TEST(floor_1) {
+  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
+  s21_decimal res = {0};
+  s21_floor(val, &res);
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  ck_assert_float_eq(-2, fres);
+}
+END_TEST
+
+START_TEST(floor_2) {
+  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
+  s21_decimal res = {0};
+  setScale(&val, 5);
+  s21_floor(val, &res);
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  ck_assert_float_eq(-1, fres);
+}
+END_TEST
+
+START_TEST(floor_3) {
+  s21_decimal val = {{2, 0, 0, 0}};
+  s21_decimal res = {0};
+  setScale(&val, 5);
+  s21_floor(val, &res);
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  ck_assert_float_eq(0, fres);
 }
 END_TEST
 
 START_TEST(round_0) {
   s21_decimal val = {{7, 7, 7, 0}};
   s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_round(val, &res));
+  s21_round(val, &res);
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = 129127208515966861312.0;
+  ck_assert_float_eq(need, fres);
 }
 END_TEST
 
@@ -1212,68 +1323,14 @@ START_TEST(round_9) {
   s21_decimal val = {{128, 0, 0, 0}};
   s21_decimal res = {0};
   setScale(&val, 1);
-  ck_assert_int_eq(0, s21_round(val, &res));
+  s21_round(val, &res);
+  float fres = 0;
+  s21_from_decimal_to_float(res, &fres);
+  float need = 13;
+  ck_assert_float_eq(need, fres);
 }
 END_TEST
 
-START_TEST(truncate_0) {
-  s21_decimal val = {{7, 7, 7, 0}};
-  s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_truncate(val, &res));
-}
-END_TEST
-
-START_TEST(truncate_1) {
-  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
-  s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_truncate(val, &res));
-}
-END_TEST
-
-START_TEST(truncate_2) {
-  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
-  s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_truncate(val, &res));
-}
-END_TEST
-
-START_TEST(truncate_3) {
-  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
-  s21_decimal res = {0};
-  setScale(&val, 5);
-  ck_assert_int_eq(0, s21_truncate(val, &res));
-}
-END_TEST
-
-START_TEST(floor_0) {
-  s21_decimal val = {{2, 0, 0, 0}};
-  s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_floor(val, &res));
-}
-END_TEST
-
-START_TEST(floor_1) {
-  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
-  s21_decimal res = {0};
-  ck_assert_int_eq(0, s21_floor(val, &res));
-}
-END_TEST
-
-START_TEST(floor_2) {
-  s21_decimal val = {{2, 0, 0, ~(UINT_MAX / 2)}};
-  s21_decimal res = {0};
-  setScale(&val, 5);
-  ck_assert_int_eq(0, s21_floor(val, &res));
-}
-END_TEST
-
-START_TEST(floor_3) {
-  s21_decimal val = {{2, 0, 0, 0}};
-  s21_decimal res = {0};
-  setScale(&val, 5);
-  ck_assert_int_eq(0, s21_floor(val, &res));
-}
-END_TEST
 
 START_TEST(from_decimal_to_float_0) {
   s21_decimal val = {{123456789, 0, 0, 0}};
@@ -1510,6 +1567,7 @@ int main(void) {
   tcase_add_test(tc1_1, truncate_1);
   tcase_add_test(tc1_1, truncate_2);
   tcase_add_test(tc1_1, truncate_3);
+  tcase_add_test(tc1_1, truncate_4);
   tcase_add_test(tc1_1, floor_0);  // floor
   tcase_add_test(tc1_1, floor_1);
   tcase_add_test(tc1_1, floor_2);

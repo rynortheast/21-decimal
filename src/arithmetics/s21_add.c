@@ -1,12 +1,9 @@
 #include "./../s21_decimal.h"
 
-// TODO [s21_add] Без понятий какое должно быть начальное значение status
-// TODO [s21_add] Не должны ли мы обнулять result если оператор не сработал?
-
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
-  int status = 0, valueSign_1 = getSign(value_1), valueSign_2 = getSign(value_2);
-  for (int x = 0; x < 4; x += 1)
-    result->bits[x] = 0;
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
+  int status = 0, valueSign_1 = getSign(value_1),
+      valueSign_2 = getSign(value_2);
+  for (int x = 0; x < 4; x += 1) result->bits[x] = 0;
   if (valueSign_1 == valueSign_2) {
     alignmentScale(&value_1, &value_2);
     if (addBit(value_1, value_2, result)) {

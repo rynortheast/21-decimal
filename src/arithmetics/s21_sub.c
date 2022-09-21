@@ -1,14 +1,14 @@
 #include "./../s21_decimal.h"
 
-  // - - - = -
-  // - - + = + (-)
-  // + - - = + (+)
-  // + - + = -
+// - - - = -
+// - - + = + (-)
+// + - - = + (+)
+// + - + = -
 
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
-  int status = 0, valueSign_1 = getSign(value_1), valueSign_2 = getSign(value_2);
-  for (int x = 0; x < 4; x += 1)
-    result->bits[x] = 0;
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
+  int status = 0, valueSign_1 = getSign(value_1),
+      valueSign_2 = getSign(value_2);
+  for (int x = 0; x < 4; x += 1) result->bits[x] = 0;
 
   if (valueSign_1 != valueSign_2) {
     status = s21_add(*setSign(&value_1, 0), *setSign(&value_2, 0), result);

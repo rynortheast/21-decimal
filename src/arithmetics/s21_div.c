@@ -1,7 +1,8 @@
 #include "./../s21_decimal.h"
 
-// Если коротко, то из четырех возможных резльтутатов функции + и - покрывают три,
-// последним является деление на ноль, что по логике только и нужно обработать здесь.
+// Если коротко, то из четырех возможных резльтутатов функции + и - покрывают
+// три, последним является деление на ноль, что по логике только и нужно
+// обработать здесь.
 
 // 0. Проверяем, что второе значением не равно нулю
 // 1. ЦИКЛ. Проверяем, что значение1 > значения2
@@ -10,11 +11,12 @@
 // 4. Если значение не равно нулю, то отправляем в return для s21_div.
 
 // Result будет пустым в случаем провала?
-// Result может быть вещественным? 
+// Result может быть вещественным?
 
-int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result, s21_decimal *tmp);
+int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result,
+             s21_decimal *tmp);
 
-int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
+int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
   int res = 1;
   int sign = 0;
@@ -36,7 +38,8 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal * result) {
   return res;
 }
 
-int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result, s21_decimal *tmp) {
+int s21_div1(s21_decimal value_1, s21_decimal value_2, s21_decimal *result,
+             s21_decimal *tmp) {
   int res = 0;
   for (int i = getBitLast(value_1); i >= 0; i--) {
     if (getBit(value_1, i)) setBit(tmp, 0, 1);

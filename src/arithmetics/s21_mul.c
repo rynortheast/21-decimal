@@ -30,7 +30,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         value_1_1 = &value_1;
         value_2_1 = &value_2;
       } else if (getBitLast(value_2) > getBitLast(value_1) &&
-              getScale(value_2) > 0) {
+                 getScale(value_2) > 0) {
         value_1_1 = &value_2;
         value_2_1 = &value_1;
       } else {
