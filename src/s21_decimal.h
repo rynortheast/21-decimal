@@ -6,7 +6,7 @@
 #include <math.h>
 
 typedef struct {
-  int bits[4];
+  unsigned int bits[4];
 } s21_decimal;
 
 typedef union {
@@ -15,6 +15,7 @@ typedef union {
 } fbits;
 
 #define S21_INF 1.0 / 0.0
+#define S21_MAX_UINT 4294967295
 
 #include "./HEADERS/s21_auxiliary.h"
 #include "./HEADERS/s21_comparison.h"

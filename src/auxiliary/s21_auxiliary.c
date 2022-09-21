@@ -64,7 +64,7 @@ s21_decimal *decreaseScale(s21_decimal *value, int shift) {
     unsigned long long overflow = value->bits[2];
     for (int x = 2; x >= 0; x -= 1) {
       value->bits[x] = overflow / 10;
-      overflow = (overflow % 10) * (UINT_MAX + 1) + value->bits[x - 1];
+      overflow = (overflow % 10) * (S21_MAX_UINT + 1) + value->bits[x - 1];
     }
   }
   setScale(value, (getScale(*value) - shift));
