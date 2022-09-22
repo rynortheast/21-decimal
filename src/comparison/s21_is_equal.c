@@ -1,5 +1,6 @@
 #include "./../s21_decimal.h"
 
+//  TODO [s21_is_equal] Необходим рефакторинг кода
 int s21_is_equal(s21_decimal value_1, s21_decimal value_2) {
   int res = 1;
   if (getSign(value_1) == getSign(value_2)) {

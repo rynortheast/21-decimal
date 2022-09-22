@@ -1,5 +1,12 @@
 #include "./../s21_decimal.h"
 
+//  TODO [s21_mod] Необходим рефакторинг кода.
+//  TODO [s21_mod] Функция не работает, проверку провалило.
+//  Скорее всего она работает, но из-за проблем с s21_div и s21_mul 
+//  выдает некорректный результат. Необходимо проверять, тестировать.
+//
+//  ПРИМЕР: [10 % 4 = 2] => div -> truncate -> mul -> sub
+//
 int s21_mod(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
   result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
   int res = 5;

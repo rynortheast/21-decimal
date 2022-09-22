@@ -1,5 +1,6 @@
 #include "./../s21_decimal.h"
 
+//  TODO [s21_from_decimal_to_int] Необходим рефакторинг кода
 int s21_from_decimal_to_int(s21_decimal src, int *dst) {
   int res = 1;
   if (src.bits[1] == 0 && src.bits[2] == 0) {

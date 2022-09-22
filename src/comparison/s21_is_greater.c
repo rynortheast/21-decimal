@@ -1,5 +1,6 @@
 #include "./../s21_decimal.h"
 
+//  TODO [s21_is_greater] Необходим рефакторинг кода
 int s21_is_greater(s21_decimal value_1, s21_decimal value_2) {
   int res = 0;
   int sign_a = getSign(value_1), sign_b = getSign(value_2);

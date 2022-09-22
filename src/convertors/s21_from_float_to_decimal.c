@@ -1,8 +1,9 @@
 #include "./../s21_decimal.h"
 
+//  TODO [s21_from_float_to_decimal] Необходим рефакторинг кода
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   int res = 1, exp = getFloatExp(&src);
-  if (dst && src != 0 && (src != S21_INF || src != -S21_INF)) {
+  if (dst && src != 0 && !isinf(src)) {
     dst->bits[0] = 0;
     dst->bits[1] = 0;
     dst->bits[2] = 0;
