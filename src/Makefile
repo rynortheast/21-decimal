@@ -10,10 +10,12 @@ SOURCES_ALL = $(wildcard ./auxiliary/*.c) 	\
 	$(wildcard ./comparison/*.c)			\
 	$(wildcard ./other/*.c) 				\
 
+
 OBJ_LIBRARY := $(patsubst %.c, %.o, $(SOURCES_ALL))
 
 %.o: %.c $(HEADER)
 	gcc $(CFLAGS) -c $< -o $@
+
 
 all: s21_decimal.a test gcov_report
 
@@ -22,26 +24,25 @@ s21_decimal.a: $(OBJ_LIBRARY) $(HEADERS)
 	ranlib s21_decimal.a
 	rm -rf ./*/*.o
 
-test: s21_decimal.a ./TESTS/SUITE_main.check
-	mv ./TESTS/SUITE_main.check ./TESTS/SUITE_main.c
-	gcc $(CFLAGS) ./TESTS/SUITE_main.c s21_decimal.a -o test.out -lcheck
-	mv ./TESTS/SUITE_main.c ./TESTS/SUITE_main.check
+test: s21_decimal.a TESTS/SUITE_main.c
+	gcc $(CFLAGS) TESTS/SUITE_main.c s21_decimal.a -o test.out -lm -lcheck
 	./test.out
 
-gcov_report:
-	mv ./TESTS/SUITE_main.check ./TESTS/SUITE_main.c
-	gcc $(GCOVFLAGS) ./TESTS/SUITE_main.c $(SOURCES_ALL) -o report.out -lcheck
+gcov_report: s21_decimal.a TESTS/SUITE_main.c
+	gcc $(GCOVFLAGS) TESTS/SUITE_main.c $(SOURCES_ALL) -o report.out -lm -lcheck
 	./report.out
 	gcov -f $(SOURCES_ALL)
 	lcov -t "gcov_report" -o Coverage_Report.info -c -d .
 	genhtml -o ./report Coverage_Report.info
-	mv ./TESTS/SUITE_main.c ./TESTS/SUITE_main.check
 	rm -f *.gcno *.gcda *.info report.out *.gcov
 	open ./report/index-sort-f.html
-
-personal: s21_decimal.a ./TESTS/personal.c
-	gcc $(CFLAGS) ./TESTS/personal.c s21_decimal.a -o test.out -lcheck
+	
+personal: s21_decimal.a TESTS/personal.c
+	gcc $(CFLAGS) TESTS/personal.c s21_decimal.a -o test.out
 	./test.out
+
+check:
+	clang-format -style=Google -n ./*/*.c
 
 rebuild: clean all
 
