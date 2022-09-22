@@ -885,7 +885,7 @@ START_TEST(add_17) {
   setScale(&val1, 5);
   setScale(&val2, 3);
   s21_decimal res;
-  ck_assert_int_eq(1, s21_add(val1, val2, &res));
+  ck_assert_int_eq(0, s21_add(val1, val2, &res));
 }
 END_TEST
 
@@ -897,7 +897,7 @@ START_TEST(add_18) {
   setScale(&val1, 5);
   setScale(&val2, 3);
   s21_decimal res;
-  ck_assert_int_eq(2, s21_add(val1, val2, &res));
+  ck_assert_int_eq(0, s21_add(val1, val2, &res));
 }
 END_TEST
 
